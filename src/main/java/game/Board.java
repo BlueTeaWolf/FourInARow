@@ -1,9 +1,9 @@
-package Game;
+package game;
 
 /**
  * @author BlueTeaWolf (Ole)
  */
-public class Board {
+public class Board implements Protocol{
     //Board is 6 * 7
     private final String[][] board;
     private final int maxRow;
@@ -17,10 +17,10 @@ public class Board {
         this.chipsNeededWin = chipsNeededWin;
     }
 
-    public boolean nextMove(Player player, int rowMove) {
+    public String nextMove(Player player, int rowMove) {
         if (rowMove < 0 || rowMove > maxRow || !(board[0][rowMove] == null)) {
             System.out.println("Not a possible move!");
-            return false;
+            return IMPOSSIBLE_MOVE;
         }
 
         int column = 0;
@@ -33,11 +33,10 @@ public class Board {
         board[column][rowMove] = player.getPlayer();
         System.out.println("moved " + column + " " + rowMove);
         if (checkIfWon(player, column, rowMove)) {
-            System.out.println(player + " won the game!");
-            System.exit(1);
+            return END + WON;
         }
 
-        return true;
+        return OK + column + ":" + rowMove;
     }
 
     public boolean checkIfWon(Player player, int column, int row) {
