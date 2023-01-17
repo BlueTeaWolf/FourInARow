@@ -5,15 +5,15 @@ package game;
  */
 public enum Player {
 
-    RED("R"), YELLOW("Y");
+    RED('R'), YELLOW('Y');
 
-    private final String r;
+    private final char r;
 
-    Player(String r) {
+    Player(char r) {
         this.r = r;
     }
 
-    public String getPlayer() {
+    public char getPlayer() {
         return r;
     }
 

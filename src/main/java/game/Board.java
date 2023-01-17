@@ -3,35 +3,34 @@ package game;
 /**
  * @author BlueTeaWolf (Ole)
  */
-public class Board implements Protocol{
+public class Board implements Protocol {
     //Board is 6 * 7
-    private final String[][] board;
+    private final char[][] board;
     private final int maxRow;
     private final int maxColumn;
     private final int chipsNeededWin;
 
     public Board(int x, int y, int chipsNeededWin) {
-        board = new String[x][y];
+        board = new char[x][y];
         maxRow = y - 1;
         maxColumn = x - 1;
         this.chipsNeededWin = chipsNeededWin;
     }
 
     public String nextMove(Player player, int rowMove) {
-        if (rowMove < 0 || rowMove > maxRow || !(board[0][rowMove] == null)) {
+        if (rowMove < 0 || rowMove > maxRow || !(board[0][rowMove] == 0)) {
             System.out.println("Not a possible move!");
             return IMPOSSIBLE_MOVE;
         }
 
         int column = 0;
-        while (board[column][rowMove] == null && column < maxRow - 1) {
+        while (board[column][rowMove] == 0 && column < maxColumn) {
             column++;
         }
-        if (board[column][rowMove] != null) {
+        if (board[column][rowMove] != 0) {
             column--;
         }
         board[column][rowMove] = player.getPlayer();
-        System.out.println("moved " + column + " " + rowMove);
         if (checkIfWon(player, column, rowMove)) {
             return END + WON;
         }
@@ -70,7 +69,7 @@ public class Board implements Protocol{
             if (board[column - chipsNeededWin + i][row] == player.getPlayer()) {
                 check++;
                 if (check >= chipsNeededWin) {
-                    System.out.println("Verticle win");
+                    System.out.println("Vertical win");
                     return true;
                 }
             } else {
@@ -78,19 +77,18 @@ public class Board implements Protocol{
             }
         }
 
-//        top left to bottom right
+//        top left to down right
         check = 0;
-        int columnMove = 0;
-        for (int rowMove = 0; rowMove < chipsNeededWin * 2; rowMove++) {
-            if (rowMove - chipsNeededWin > maxRow || columnMove - chipsNeededWin > maxColumn ||
-                    rowMove - chipsNeededWin < 0 || columnMove - chipsNeededWin < 0) {
+        int columnMove = column - chipsNeededWin;
+        for (int rowMove = row - chipsNeededWin; rowMove < chipsNeededWin * 2; rowMove++) {
+            if (rowMove > maxRow || columnMove > maxColumn || rowMove < 0 || columnMove < 0) {
                 columnMove++;
                 continue;
             }
-            if (board[columnMove - chipsNeededWin][rowMove - chipsNeededWin] == player.getPlayer()) {
+            if (board[columnMove][rowMove] == player.getPlayer()) {
                 check++;
                 if (check >= chipsNeededWin) {
-                    System.out.println("Left to bottom win");
+                    System.out.println("Top left to bottom right win");
                     return true;
                 }
             } else {
@@ -101,17 +99,16 @@ public class Board implements Protocol{
 
         //top right to bottom left
         check = 0;
-        int rowMove = row + chipsNeededWin;
-        for (int columnMove1 = 0; columnMove1 < chipsNeededWin * 2; columnMove1++) {
-            if (columnMove1 - chipsNeededWin > maxColumn || rowMove > maxColumn ||
-                    columnMove1 - chipsNeededWin < 0 || rowMove < 0) {
+        int rowMove = row + chipsNeededWin-1;
+        for (int i = 1; i < chipsNeededWin * 2; i++) {
+            if (rowMove > maxRow || (column - chipsNeededWin + i) > maxColumn || rowMove < 0 || (column - chipsNeededWin + i) - chipsNeededWin < 0) {
                 rowMove--;
                 continue;
             }
-            if (board[rowMove][columnMove1 - chipsNeededWin] == player.getPlayer()) {
+            if (board[column - chipsNeededWin + i][rowMove] == player.getPlayer()) {
                 check++;
                 if (check >= chipsNeededWin) {
-                    System.out.println("Right to bottom win");
+                    System.out.println("Top right to bottom left win");
                     return true;
                 }
             } else {
@@ -123,10 +120,29 @@ public class Board implements Protocol{
         return false;
     }
 
-    public String[][] getBoard() {
+    public void removeMove(int row) {
+        if (row > maxRow) {
+            return;
+        }
+        int column = 0;
+        while (board[column][row] == 0 && column < maxColumn) {
+            column++;
+        }
+        board[column][row] = 0;
+    }
+
+    public int getMaxRow() {
+        return maxRow;
+    }
+
+    public int getMaxColumn() {
+        return maxColumn;
+    }
+
+    public char[][] getBoard() {
         int column = 0;
         for (int j = 0; j <= maxColumn; j++) {
-            for (int i = 0; i <= maxRow-1; i++) {
+            for (int i = 0; i <= maxRow - 1; i++) {
                 System.out.print(board[column][i] + " ");
             }
             System.out.print(board[column][maxRow] + "\n");
