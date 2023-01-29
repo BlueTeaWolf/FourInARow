@@ -30,7 +30,7 @@ public class Client {
     }
 
 
-    private class GameClientListener extends Thread implements Protocol{
+    private class GameClientListener extends Thread implements Protocol {
 
         private Socket socket;
         private boolean listening;
@@ -40,44 +40,48 @@ public class Client {
         }
 
         public void run() {
-            this.listening = true;
+            listening = true;
             String message;
             Scanner scanner = new Scanner(System.in);
             while (listening) {
                 try {
-                    System.out.println("TEST");
+                    System.out.println("Reading line");
                     message = socket.readLine();
-                    if(message.equals(NEXT_MOVE)) {
+                    System.out.println("recieved message");
+                    if (message.equals(NEXT_MOVE)) {
+                        System.out.println("Make next move: ");
                         makeMove(scanner.nextInt());
+                        System.out.println("made move");
                         continue;
-                    }
-                    if(message.startsWith(END)) {
+                    } else if (message.startsWith(END)) {
                         String endResult = message.split(":")[1];
-                        if(endResult.equals(WON)) {
+                        if (endResult.equals(WON)) {
                             System.out.println("You won");
                         } else {
                             System.out.println("You lost");
                         }
-                    }
-                    if(message.startsWith(NEXT_MOVE)) {
+                    } else if (message.startsWith(NEXT_MOVE)) {
                         String[] move = message.split(":");
                         int x = Integer.parseInt(move[1]);
                         int y = Integer.parseInt(move[2]);
-                    }
-                    if(message.startsWith(OK)) {
+                    } else if (message.startsWith(OK)) {
                         String[] move = message.split(":");
                         int x = Integer.parseInt(move[1]);
                         int y = Integer.parseInt(move[2]);
-                    } else if(message.equals(CONNECTED)) {
-                        System.out.println();
+                        System.out.printf("Move x: %d%n Move y: %d", x, y);
+                    } else if (message.equals(CONNECTED)) {
+                        System.out.println(" Connected");
                     } else if (message.equals(IMPOSSIBLE_MOVE)) {
-                        
-                    }
-                    System.out.println(message);
+                        System.out.println(IMPOSSIBLE_MOVE);
+                        makeMove(scanner.nextInt());
+                        continue;
+                    } else if (message.startsWith(START)) {
 
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                System.out.println("End");
             }
             try {
                 socket.close();
