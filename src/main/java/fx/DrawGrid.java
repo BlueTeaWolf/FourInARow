@@ -1,53 +1,70 @@
 package fx;
 
+import client.Client;
 import game.Player;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-import java.awt.Dimension;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 
 public class DrawGrid {
     private JFrame frame;
+    private MultiDraw multiDraw;
+    private static JLabel turnLabel = new JLabel();
+    private static JLabel winAndLose = new JLabel();
 
-    public DrawGrid(int rows, int columns) {
+    public DrawGrid(int rows, int columns, Client client, int myWins, int losses, int chipsNeededWin) {
         frame = new JFrame("Four-In-A-Row");
-        frame.setSize(1280, 720);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setSize(750, 720);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setPreferredSize(frame.getSize());
-        frame.add(new MultiDraw(frame.getSize(), rows, columns));
+        frame.add(multiDraw = new MultiDraw(frame.getSize(), rows, columns,client));
+        frame.add(turnLabel, BorderLayout.SOUTH);
+        turnLabel.setText("Not your turn");
+        frame.add(winAndLose, BorderLayout.NORTH);
+        winAndLose.setText("Wins: " + myWins + "           Losses: " + losses + "                      chipsNeededWin: " + chipsNeededWin);
         frame.pack();
         frame.setVisible(true);
     }
 
-    public static void main(String... argv) {
-        //TODO client start drawing grid after receiving the boards size
-        new DrawGrid(6, 7);
+    public void setTurn(boolean turn) {
+        multiDraw.setTurn(turn);
+        turnLabel.setText(turn ? "Your turn" : "Not your turn");
+        if (turn) {
+            turnLabel.setForeground(Color.MAGENTA);
+        } else {
+            turnLabel.setForeground(Color.DARK_GRAY);
+        }
+    }
+
+    public void setChip(Player player, int row, int column) {
+        multiDraw.setChip(player,row,column);
+    }
+    public void disposeUI() {
+        frame.dispose();
     }
 
     public static class MultiDraw extends JPanel implements MouseListener {
         private static final int CELL_WIDTH = 100; // 40
-        private final Color[][] grid;
+        private Color[][] grid;
         private boolean turn;
+        private Client client;
 
-
-        public MultiDraw(Dimension dimension, int rows, int cols) {
+        public MultiDraw(Dimension dimension, int rows, int cols, Client client) {
             setSize(dimension);
             setPreferredSize(dimension);
             grid = new Color[rows][cols];
             addMouseListener(this);
             initializeGrid();
+            this.client = client;
         }
 
         private void initializeGrid() {
             for (int row = 0; row < grid.length; row++) {
                 for (int col = 0; col < grid[0].length; col++) {
-                    grid[row][col] = new Color(255, 255, 255);
+                    grid[row][col] = Color.WHITE;
                 }
             }
         }
@@ -61,7 +78,6 @@ public class DrawGrid {
             int startX = 0;
             int startY = 0;
 
-            //2) draw grid here
             for (int row = 0; row < grid.length; row++) {
                 for (int col = 0; col < grid[0].length; col++) {
                     g2.setColor(grid[row][col]);
@@ -86,16 +102,22 @@ public class DrawGrid {
             } else {
                 grid[row][column] = Color.YELLOW;
             }
-
+            repaint();
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {
             if (turn) {
                 int x = e.getX() / CELL_WIDTH;
-                System.out.println(x);
+                try {
+                    client.makeMove(x);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
             turn = false;
+            turnLabel.setText("Not your turn");
+            turnLabel.setForeground(Color.DARK_GRAY);
         }
 
         @Override
