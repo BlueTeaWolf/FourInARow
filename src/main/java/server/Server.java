@@ -7,6 +7,7 @@ import socketio.ServerSocket;
 import socketio.Socket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -23,11 +24,11 @@ public class Server implements Protocol {
     private final Player player1 = Player.RED;
     private final Player player2 = Player.YELLOW;
     private boolean isListening = true;
+//    private ArrayList<Connection> connections = new ArrayList<>();
 
     public Server(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        //TEST
-        initializeBoard(5, 6, 4);
+//        initializeBoard(5, 6, 4);
         test.push(player1);
         test.push(player2);
     }
@@ -40,14 +41,27 @@ public class Server implements Protocol {
                 socket = serverSocket.accept();
                 socket.write(CONNECTED + "\n");
                 System.out.println("CONNECTED");
-                Connection connection = new Connection(socket);
-                connection.start();
+
                 players.put(socket, test.pop());
                 sendMessage(socket, NEXT_MOVE);
             } else {
+                Socket receiver = (Socket) players.keySet().toArray()[0];
+                receiver.write(SETTINGS + "\n");
+                System.out.println("waiting...");
+                String message = receiver.readLine();
+                String[] settings = message.split(":");
+                initializeBoard(Integer.parseInt(settings[0]), Integer.parseInt(settings[1]), Integer.parseInt(settings[2]));
 
                 isListening = false;
-                socket.write(NEXT_MOVE + "\n");
+
+                for (Socket connections : players.keySet()) {
+                    Connection connection = new Connection(connections);
+                    connection.start();
+//                    this.connections.add(connection);
+                    connections.write(START + settings[0] + ":" + settings[1] + ":" + settings[3] + ":" + settings[2] + "\n");
+                    System.out.println("SEND");
+                }
+                receiver.write(NEXT_MOVE + "\n");
             }
         }
     }
@@ -70,34 +84,69 @@ public class Server implements Protocol {
                 }
                 socket.write(message + "\n");
             }
-        } else if (message.startsWith(START)) {
+        } else if (message.startsWith(END)) {
             for (Socket socket : players.keySet()) {
-                socket.write(message + "\n");
+                if (socket == sender) {
+                    socket.write(message + ":" + WON + "\n");
+                } else {
+                    socket.write(message + ":" + LOSE + "\n");
+                }
             }
+            newGame();
         }
     }
 
+    private void newGame() throws IOException {
+        Socket receiver = (Socket) players.keySet().toArray()[0];
+        System.out.println("send settings");
+//
+//        connections.get(0).running = false;
+//        connections.get(1).running = false;
 
-        private class Connection extends Thread {
+        receiver.write(SETTINGS + "\n");
 
-            private Socket socket;
-            private Board board;
+        String newMessage = receiver.readLine();
+        String[] settings = newMessage .split(":");
+        System.out.println("Got settings");
+        System.out.println(newMessage );
 
-            public Connection(Socket socket) {
-                this.socket = socket;
-            }
+        if(newMessage.startsWith("0")) {
+            newMessage = newMessage.substring(1);
+        }
 
-            public void run() {
-                while (true) {
-                    try {
-                        int nextMoveRow = socket.read();
-                        makeNextMove(this.socket, nextMoveRow);
-                        System.out.println("Hellooooo");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+        initializeBoard(Integer.parseInt(settings[0]), Integer.parseInt(settings[1]), Integer.parseInt(settings[2]));
+        System.out.println("initialized board");
+        for (Socket socket: players.keySet()) {
+            socket.write(START + settings[0] + ":" + settings[1] + ":" + settings[3] + ":" + settings[2] + "\n");
+            System.out.println(START + settings[0] + ":" + settings[1] + ":" + settings[3] + settings[2] + "\n");
+            System.out.println("Send settings to everyone");
+        }
+        receiver.write(NEXT_MOVE + "\n");
+        System.out.println("send next move");
+//        connections.get(0).running = true;
+//        connections.get(1).running = true;
+    }
+
+    private class Connection extends Thread {
+
+        private Socket socket;
+        private Board board;
+        private boolean running = true;
+
+        public Connection(Socket socket) {
+            this.socket = socket;
+        }
+
+        public void run() {
+            while (running) {
+                try {
+                    int nextMoveRow = socket.read();
+                    makeNextMove(this.socket, nextMoveRow);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
     }
+}
 
