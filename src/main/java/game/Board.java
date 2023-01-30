@@ -32,10 +32,10 @@ public class Board implements Protocol {
         }
         board[column][rowMove] = player.getPlayer();
         if (checkIfWon(player, column, rowMove)) {
-            return END + WON;
+            return END + rowMove + ":" + column + ":" + player.getPlayer();
         }
 
-        return OK + column + ":" + rowMove;
+        return OK + player.getPlayer() + ":" + column + ":" + rowMove;
     }
 
     public boolean checkIfWon(Player player, int column, int row) {
@@ -97,15 +97,15 @@ public class Board implements Protocol {
             columnMove++;
         }
 
-        //top right to bottom left
+        //top right to bottom left    not working
         check = 0;
-        int rowMove = row + chipsNeededWin-1;
-        for (int i = 1; i < chipsNeededWin * 2; i++) {
-            if (rowMove > maxRow || (column - chipsNeededWin + i) > maxColumn || rowMove < 0 || (column - chipsNeededWin + i) - chipsNeededWin < 0) {
+        int rowMove = row + chipsNeededWin;
+        for (int columns = column - chipsNeededWin; columns < chipsNeededWin * 2; columns++) {
+            if (columns < 0 || columns > maxColumn || rowMove > maxRow || rowMove < 0) {
                 rowMove--;
                 continue;
             }
-            if (board[column - chipsNeededWin + i][rowMove] == player.getPlayer()) {
+            if (board[columns][rowMove] == player.getPlayer()) {
                 check++;
                 if (check >= chipsNeededWin) {
                     System.out.println("Top right to bottom left win");
@@ -116,6 +116,7 @@ public class Board implements Protocol {
             }
             rowMove--;
         }
+
 
         return false;
     }
