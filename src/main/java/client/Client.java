@@ -61,7 +61,6 @@ public class Client {
                     if (message.equals(NEXT_MOVE)) {
                         System.out.println("Make next move: ");
                         drawGrid.setTurn(true);
-                        //maybe saying that it is your turn
                         System.out.println("made move");
                         continue;
                     } else if (message.startsWith(END)) {
@@ -69,6 +68,8 @@ public class Client {
                         char player;
                         if(message.endsWith(WON)) {
                             wins++;
+                            player = message.charAt(message.length()-5);
+                        } else if (message.endsWith(TIE)) {
                             player = message.charAt(message.length()-5);
                         } else {
                             losses++;
@@ -93,7 +94,6 @@ public class Client {
                         } else {
                             drawGrid.setChip(Player.YELLOW, x, y);
                         }
-
                         System.out.printf("Move x: %d%n Move y: %d", x, y);
                     } else if (message.equals(CONNECTED)) {
                         System.out.println(" Connected");
@@ -104,7 +104,7 @@ public class Client {
                         continue;
                     } else if (message.startsWith(START)) {
                         makeUI(message);
-                    } else if (message.equals(SETTINGS)) {
+                    } else if (message.startsWith(SETTINGS)) {
                         SettingsUI settingsUI = new SettingsUI();
                         settingsUI.setVisible(true);
                         while (settingsUI.isVisible()) {

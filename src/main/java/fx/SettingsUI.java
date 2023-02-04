@@ -23,6 +23,7 @@ public class SettingsUI extends JFrame implements ActionListener {
     private JTextField columnsField;
     private JTextField chipsForWinField;
     private JCheckBox resetPointsCheckBox;
+    private JCheckBox playAgainstComputerCheckBox;
     private JButton startGameButton;
     private String gameSettings;
 

@@ -1,6 +1,7 @@
 package server;
 
 import game.Board;
+import game.Computer;
 import game.Player;
 import game.Protocol;
 import socketio.ServerSocket;
@@ -46,7 +47,8 @@ public class Server implements Protocol {
                 sendMessage(socket, NEXT_MOVE);
             } else {
                 Socket receiver = (Socket) players.keySet().toArray()[0];
-                receiver.write(SETTINGS + "\n");
+                receiver.write(SETTINGS + ":" + players.get(receiver) + "\n");
+                System.out.println(players.get(receiver) + " <----");
                 System.out.println("waiting...");
                 String message = receiver.readLine();
                 String[] settings = message.split(":");
@@ -75,6 +77,7 @@ public class Server implements Protocol {
     }
 
     public void sendMessage(Socket sender, String message) throws IOException {
+        System.out.println(message);
         if (message.equals(IMPOSSIBLE_MOVE)) {
             sender.write(IMPOSSIBLE_MOVE + "\n");
         } else if (message.startsWith(OK)) {
@@ -86,6 +89,10 @@ public class Server implements Protocol {
             }
         } else if (message.startsWith(END)) {
             for (Socket socket : players.keySet()) {
+                if(message.endsWith(TIE)) {
+                    socket.write(message + "\n");
+                    continue;
+                }
                 if (socket == sender) {
                     socket.write(message + ":" + WON + "\n");
                 } else {
@@ -99,9 +106,6 @@ public class Server implements Protocol {
     private void newGame() throws IOException {
         Socket receiver = (Socket) players.keySet().toArray()[0];
         System.out.println("send settings");
-//
-//        connections.get(0).running = false;
-//        connections.get(1).running = false;
 
         receiver.write(SETTINGS + "\n");
 
@@ -123,8 +127,6 @@ public class Server implements Protocol {
         }
         receiver.write(NEXT_MOVE + "\n");
         System.out.println("send next move");
-//        connections.get(0).running = true;
-//        connections.get(1).running = true;
     }
 
     private class Connection extends Thread {

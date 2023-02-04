@@ -30,11 +30,27 @@ public class Board implements Protocol {
         if (board[column][rowMove] != 0) {
             column--;
         }
+
         board[column][rowMove] = player.getPlayer();
         if (checkIfWon(player, column, rowMove)) {
             return END + rowMove + ":" + column + ":" + player.getPlayer();
         }
-
+        //Tie
+        int check = 0;
+        boolean tie = true;
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == 0) {
+                    tie = false;
+                    break;
+                }
+                System.out.println(board[i][j]);
+            }
+        }
+        if (tie) {
+            System.out.println("It's a tie");
+            return END + rowMove + ":" + column + ":" + TIE;
+        }
         return OK + player.getPlayer() + ":" + column + ":" + rowMove;
     }
 

@@ -18,9 +18,13 @@ public class Computer {
     }
 
     public int makeNextMove(int lastRow) {
-        Random randm = new Random(board.getMaxRow());
+        Random randm = new Random();
 
-        board.nextMove(enemy,lastRow);
+        if(!(lastRow <= -1)) {
+            return board.getMaxRow() / 2;
+        } else {
+            board.nextMove(enemy, lastRow);
+        }
 
         String result;
         for (int j = 0; j < board.getMaxRow() +1; j++) {

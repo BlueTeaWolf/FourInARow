@@ -15,5 +15,5 @@ public interface Protocol {
     String END = "END:";
     String LOSE = "LOST";
     String WON = "WON";
-
+    String TIE = "TIE";
 }
